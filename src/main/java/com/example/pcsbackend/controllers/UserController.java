@@ -6,10 +6,12 @@ import com.example.pcsbackend.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -17,6 +19,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -50,4 +53,25 @@ public class UserController {
         userService.deleteUserByEmail(email);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/me/{email}/{password}")
+    public ResponseEntity<?> getUserByEmailAndPassword(
+            @PathVariable String email,
+            @PathVariable String password) {
+
+        Optional<User> userOpt = userService.getUserByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+
+        User user = userOpt.get();
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+
+        return ResponseEntity.ok(user);
+    }
+
 }
