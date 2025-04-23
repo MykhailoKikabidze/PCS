@@ -41,17 +41,14 @@ public class UserController {
 
     @PutMapping("/{email}")
     public ResponseEntity<User> updateUserByEmail(@PathVariable String email, @RequestBody User user) {
-        try {
-            return ResponseEntity.ok(userService.updateUserByEmail(email, user));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(userService.updateUserByEmail(email, user));
     }
+
 
     @DeleteMapping("/{email}")
     public ResponseEntity<Void> deleteUserByEmail(@PathVariable String email) {
         userService.deleteUserByEmail(email);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/me/{email}/{password}")

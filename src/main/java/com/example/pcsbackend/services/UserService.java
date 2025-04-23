@@ -3,6 +3,7 @@ package com.example.pcsbackend.services;
 import com.example.pcsbackend.dto.UserRequestDto;
 import com.example.pcsbackend.entities.User;
 import com.example.pcsbackend.exceptions.UserAlreadyExistsException;
+import com.example.pcsbackend.exceptions.UserNotExistsException;
 import com.example.pcsbackend.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,10 @@ public class UserService {
     }
 
     public User updateUserByEmail(String email, User updatedUser) {
+        if (!userRepository.existsByEmail(email)) {
+            throw new UserNotExistsException(email);
+        }
+
         return userRepository.findByEmail(email)
                 .map(user -> {
                     user.setName(updatedUser.getName());
@@ -54,6 +59,10 @@ public class UserService {
 
     @Transactional
     public void deleteUserByEmail(String email) {
+        if (!userRepository.existsByEmail(email)) {
+            throw new UserNotExistsException(email);
+        }
+
         userRepository.deleteByEmail(email);
     }
 }
