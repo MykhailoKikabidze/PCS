@@ -41,20 +41,15 @@ export default {
       fetch(authEndpoint)
         .then((res) => {
           if (!res.ok) {
-            // this.generalError = true;
+            this.generalError = true;
             return;
           }
           res.json().then((data) => {
-            console.log(data);
-            if (data.name) {
-              this.user = data;
-            } else {
-              // this.generalError = true;
-            }
+            this.user = data;
           });
         })
         .catch((err) => {
-          // this.generalError = true;
+          this.generalError = true;
         });
     },
   },

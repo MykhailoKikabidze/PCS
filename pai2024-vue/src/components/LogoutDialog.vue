@@ -1,18 +1,18 @@
 <script>
-const authEndpoint = "/api/users/logout";
+const authEndpoint = "/api/users";
 
 export default {
   emits: ["close"],
   methods: {
     logout() {
-      fetch(authEndpoint, {
+      fetch(authEndpoint + "/logout", {
         method: "POST",
       }).then((res) => {
         res
-          .json()
+          .text()
           .then((data) => {
             if (!res.ok) {
-              this.$emit("close", data.error, "error");
+              this.$emit("close", data, "error");
             } else {
               this.$emit("close", "Wylogowano");
             }

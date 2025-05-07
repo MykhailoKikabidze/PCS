@@ -22,17 +22,16 @@ export default {
         body: JSON.stringify(this.input),
       }).then((res) => {
         res
-          .json()
+          .text()
           .then((data) => {
             if (!res.ok) {
-              this.$emit("close", data.error, "error");
+              this.$emit("close", data, "error");
             } else {
               this.input = {};
               this.$emit("close", "Zalogowano");
             }
           })
           .catch((err) => {
-            console.error(err);
             this.$emit("close", "Brak połączenia z backendem", "error");
           });
       });
