@@ -98,14 +98,14 @@ public class UserController {
     public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("userEmail") == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No active session or user not logged in");
+            return ResponseEntity.ok(new User());
         }
 
         String email = (String) session.getAttribute("userEmail");
         Optional<User> userOpt = userService.getUserByEmail(email);
 
         if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+			session.invalidate();
         }
 
         return ResponseEntity.ok(userOpt.get());
