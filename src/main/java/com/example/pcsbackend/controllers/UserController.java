@@ -3,12 +3,14 @@ package com.example.pcsbackend.controllers;
 import com.example.pcsbackend.dto.UserRequestDto;
 import com.example.pcsbackend.entities.User;
 import com.example.pcsbackend.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +46,6 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUserByEmail(email, user));
     }
 
-
     @DeleteMapping("/{email}")
     public ResponseEntity<Void> deleteUserByEmail(@PathVariable String email) {
         userService.deleteUserByEmail(email);
@@ -52,11 +53,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> getUserByEmailAndPassword(
-            @RequestParam String email,
-            @RequestParam String password) {
+    public ResponseEntity<?> loginUser(
+            @RequestBody User userData,
+            HttpServletRequest request) {
 
-        Optional<User> userOpt = userService.getUserByEmail(email);
+        Optional<User> userOpt = userService.getUserByEmail(userData.getEmail());
 
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
@@ -64,17 +65,54 @@ public class UserController {
 
         User user = userOpt.get();
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(userData.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
-        return ResponseEntity.ok(user);
+        // Create session
+        HttpSession session = request.getSession(true);
+        session.setAttribute("userId", user.getId());
+        session.setAttribute("userEmail", user.getEmail());
+
+        return ResponseEntity.ok("Login successful");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        return ResponseEntity.ok("Logout successful");
+    }
+
+    @GetMapping("/session-info")
+    public ResponseEntity<?> getSessionInfo(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No active session");
+        }
+        return ResponseEntity.ok("User ID: " + session.getAttribute("userId") + ", Email: " + session.getAttribute("userEmail"));
+    }
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("userEmail") == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No active session or user not logged in");
+        }
+
+        String email = (String) session.getAttribute("userEmail");
+        Optional<User> userOpt = userService.getUserByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        return ResponseEntity.ok(userOpt.get());
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<User>> searchUsersByEmail(@RequestParam String emailPart) {
         return ResponseEntity.ok(userService.searchUsersByEmail(emailPart));
     }
-
-
 }
