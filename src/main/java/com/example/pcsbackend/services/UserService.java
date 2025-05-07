@@ -65,4 +65,9 @@ public class UserService {
 
         userRepository.deleteByEmail(email);
     }
+
+    public List<User> searchUsersByEmail(String substring) {
+        return userRepository.findByEmailContainingIgnoreCase(substring);
+    }
+
 }

@@ -33,7 +33,7 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/signup")
     public ResponseEntity<User> createUser(@Valid @RequestBody UserRequestDto userDto) {
         User user = userService.createUserFromDto(userDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
@@ -51,10 +51,10 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping("/me/{email}/{password}")
+    @PostMapping("/login")
     public ResponseEntity<?> getUserByEmailAndPassword(
-            @PathVariable String email,
-            @PathVariable String password) {
+            @RequestParam String email,
+            @RequestParam String password) {
 
         Optional<User> userOpt = userService.getUserByEmail(email);
 
@@ -70,5 +70,11 @@ public class UserController {
 
         return ResponseEntity.ok(user);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<User>> searchUsersByEmail(@RequestParam String emailPart) {
+        return ResponseEntity.ok(userService.searchUsersByEmail(emailPart));
+    }
+
 
 }
