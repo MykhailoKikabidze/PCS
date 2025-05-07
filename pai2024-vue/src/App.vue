@@ -2,12 +2,13 @@
 import common from "./mixins/common";
 import LoginDialog from "./components/LoginDialog.vue";
 import LogoutDialog from "./components/LogoutDialog.vue";
+import SignupDialog from "./components/SignupDialog.vue";
 
-const authEndpoint = "/api/auth";
+const authEndpoint = "/api/users/me";
 
 export default {
   mixins: [common],
-  components: { LoginDialog, LogoutDialog },
+  components: { LoginDialog, LogoutDialog, SignupDialog },
   data() {
     return {
       snackbar: { on: false },
@@ -15,6 +16,7 @@ export default {
       user: {},
       loginDialog: false,
       logoutDialog: false,
+      signupDialog: false,
     };
   },
   methods: {
@@ -26,6 +28,7 @@ export default {
     onLogin(text, color = "success") {
       this.loginDialog = false;
       this.logoutDialog = false;
+      this.signupDialog = false;
       if (color == "success") {
         this.whoami();
         this.$router.push("/");
@@ -38,19 +41,20 @@ export default {
       fetch(authEndpoint)
         .then((res) => {
           if (!res.ok) {
-            this.generalError = true;
+            // this.generalError = true;
             return;
           }
           res.json().then((data) => {
-            if (data.sessionid) {
+            console.log(data);
+            if (data.name) {
               this.user = data;
             } else {
-              this.generalError = true;
+              // this.generalError = true;
             }
           });
         })
         .catch((err) => {
-          this.generalError = true;
+          // this.generalError = true;
         });
     },
   },
@@ -62,6 +66,7 @@ export default {
 
 <template>
   <v-app v-if="!generalError">
+    <!-- <v-app> -->
     <v-navigation-drawer expand-on-hover rail permanent>
       <v-list nav>
         <v-list-item
@@ -84,7 +89,16 @@ export default {
           prepend-icon="mdi-login"
           title="Login"
           exact
-          v-if="!user.username"
+          v-if="!user.name"
+        />
+        <v-list-item
+          key="Login"
+          @click="signupDialog = true"
+          @close="onLogin"
+          prepend-icon="mdi-account-plus"
+          title="Utwórz konto"
+          exact
+          v-if="!user.name"
         />
         <v-list-item
           key="Logout"
@@ -93,7 +107,7 @@ export default {
           prepend-icon="mdi-logout"
           title="Logout"
           exact
-          v-if="user.username"
+          v-if="user.name"
         />
       </v-list>
     </v-navigation-drawer>
@@ -101,6 +115,10 @@ export default {
     <v-main>
       <router-view @popup="onPopup" :user="user"></router-view>
     </v-main>
+
+    <v-dialog v-model="signupDialog" width="33%">
+      <SignupDialog @close="onLogin" />
+    </v-dialog>
 
     <v-dialog v-model="loginDialog" width="33%">
       <LoginDialog @close="onLogin" />

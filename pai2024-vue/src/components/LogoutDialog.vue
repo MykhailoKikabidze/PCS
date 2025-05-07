@@ -1,12 +1,12 @@
 <script>
-const authEndpoint = "/api/auth";
+const authEndpoint = "/api/users/logout";
 
 export default {
   emits: ["close"],
   methods: {
     logout() {
       fetch(authEndpoint, {
-        method: "DELETE",
+        method: "POST",
       }).then((res) => {
         res
           .json()
