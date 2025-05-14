@@ -9,9 +9,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ProjectUser {
 
     @EmbeddedId
+    @EqualsAndHashCode.Include
     private ProjectUserId id;
 
     @ManyToOne(fetch = FetchType.LAZY)

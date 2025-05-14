@@ -30,6 +30,7 @@ public class ProjectService {
                 .dueDate(req.getDueDate())
                 .build();
         projectRepository.save(project);
+        Set<ProjectUser> projectUsers = new HashSet<>(Collections.emptySet());
 
         for (String email : req.getUserEmails()) {
             User user = userRepository.findByEmail(email)
@@ -40,9 +41,9 @@ public class ProjectService {
                     .user(user)
                     .project(project)
                     .build();
-            projectUserRepository.save(link);
-            project.getProjectUsers().add(link);
+            projectUsers.add(link);
         }
+        project.setProjectUsers(projectUsers);
 
         return mapToResponse(project);
     }

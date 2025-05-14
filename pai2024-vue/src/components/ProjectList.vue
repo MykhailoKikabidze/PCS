@@ -23,7 +23,7 @@ export default {
           align: "end",
           sortable: true,
         },
-        { title: "Data końca", key: "endDate", align: "end", sortable: true },
+        { title: "Data końca", key: "dueDate", align: "end", sortable: true },
         {
           title: "Wykonawcy",
           key: "contractors",
