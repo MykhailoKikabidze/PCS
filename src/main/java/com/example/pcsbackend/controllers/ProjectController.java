@@ -1,7 +1,10 @@
 package com.example.pcsbackend.controllers;
 
 import com.example.pcsbackend.dto.*;
+import com.example.pcsbackend.entities.User;
 import com.example.pcsbackend.services.ProjectService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -12,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/projects")
+@RequestMapping("/api/projects")
 @RequiredArgsConstructor
 @Validated
 public class ProjectController {
@@ -29,9 +32,10 @@ public class ProjectController {
 
     @GetMapping
     public ResponseEntity<List<ProjectResponse>> getProjectsByUserEmail(
-            @RequestParam String userEmail) {
+                HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
 
-        List<ProjectResponse> projects = projectService.getProjectsByUserEmail(userEmail);
+        List<ProjectResponse> projects = projectService.getProjectsByUserEmail((String)session.getAttribute("userEmail"));
         return ResponseEntity.ok(projects);
     }
 

@@ -2,7 +2,7 @@
 import common from "../mixins/common";
 import ProjectEditor from "./ProjectEditor.vue";
 
-const projectEndpoint = "/api/project";
+const projectEndpoint = "/api/projects";
 
 export default {
   components: { ProjectEditor },

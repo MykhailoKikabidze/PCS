@@ -1,7 +1,7 @@
 <script>
 import TaskModal from "./TaskModal.vue";
-const projectEndpoint = "/api/project";
-const personEndpoint = "/api/person";
+const projectEndpoint = "/api/projects";
+const personEndpoint = "/api/users";
 
 export default {
   components: {
@@ -116,7 +116,7 @@ export default {
     ).then((res) =>
       res.json().then((facet) => {
         if (!facet.error) {
-          this.persons = facet.data;
+          this.persons = facet;
         }
       }),
     );
@@ -154,16 +154,16 @@ export default {
           type="date"
           variant="outlined"
           label="Data końca"
-          v-model="input.endDate"
+          v-model="input.dueDate"
           :rules="[rules.validDate]"
         >
         </v-text-field>
         <v-autocomplete
           variant="outlined"
-          v-model="input.contractor_ids"
+          v-model="input.userEmails"
           :items="persons"
-          :item-title="(item) => item.firstName + ' ' + item.lastName"
-          item-value="_id"
+          :item-title="(item) => item.name + ' ' + item.surname"
+          item-value="email"
           label="Wykonawcy"
           multiple
           chips
