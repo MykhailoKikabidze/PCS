@@ -1,22 +1,20 @@
 package com.example.pcsbackend.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(name = "projects")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(updatable = false, nullable = false)
@@ -24,13 +22,10 @@ public class User {
 
     @Column(nullable = false)
     private String name;
-    @Column(nullable = false)
-    private String surname;
-    @Column(unique = true, nullable = false)
-    private String email;
-    @Column(nullable = false)
-    private String password;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private LocalDate startDate;
+    private LocalDate dueDate;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProjectUser> projectUsers = new HashSet<>();
 }
