@@ -69,7 +69,7 @@ export default {
           :to="route.path"
           :title="route.title"
           :prepend-icon="route.icon"
-          v-show="!route.roles || checkIfInRole(user, route.roles)"
+          v-show="route.public || user?.name"
           exact
         ></v-list-item>
       </v-list>

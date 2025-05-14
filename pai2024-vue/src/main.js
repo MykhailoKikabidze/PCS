@@ -22,7 +22,6 @@ const vuetify = createVuetify({
 // Router
 import { createRouter, createWebHashHistory } from "vue-router";
 import Dashboard from "./components/Dashboard.vue";
-import PersonList from "./components/PersonList.vue";
 import ProjectList from "./components/ProjectList.vue";
 import Charts from "./components/Charts.vue";
 import Analysis from "./components/Analysis.vue";
@@ -37,48 +36,37 @@ const router = createRouter({
       component: Dashboard,
       title: "Pulpit",
       icon: "mdi-home",
-    },
-    {
-      path: "/persons",
-      component: PersonList,
-      title: "Osoby",
-      icon: "mdi-account-tie-woman",
-      // roles: [0, 1],
+      public: true,
     },
     {
       path: "/projects",
       component: ProjectList,
       title: "Projekty",
       icon: "mdi-projector",
-      // roles: [0, 1],
     },
     {
       path: "/charts",
       component: Charts,
       title: "Wykresy",
       icon: "mdi-chart-bar",
-      // roles: [0, 1],
     },
     {
       path: "/chat",
       component: Chat,
       title: "Czat",
       icon: "mdi-chat-outline",
-      // roles: [0, 1],
     },
     {
       path: "/analysis",
       component: Analysis,
       title: "Analiza",
       icon: "mdi-chart-bar",
-      // roles: [0],
     },
     {
       path: "/settings",
       component: Settings,
       title: "Ustawienia",
       icon: "mdi-cog",
-      // roles: [0],
     },
   ],
 });

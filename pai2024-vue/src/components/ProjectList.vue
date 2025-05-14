@@ -39,6 +39,7 @@ export default {
     };
   },
   methods: {
+    checkIfInRole: () => true,
     loadItems({ page, itemsPerPage, sortBy }) {
       this.loading = true;
       const skip = (page - 1) * itemsPerPage;

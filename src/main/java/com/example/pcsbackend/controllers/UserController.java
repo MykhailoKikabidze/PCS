@@ -56,7 +56,6 @@ public class UserController {
     public ResponseEntity<?> loginUser(
             @RequestBody User userData,
             HttpServletRequest request) {
-
         Optional<User> userOpt = userService.getUserByEmail(userData.getEmail());
 
         if (userOpt.isEmpty()) {
