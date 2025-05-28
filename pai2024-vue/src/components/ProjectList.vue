@@ -51,17 +51,18 @@ export default {
         queryString.sort = "name";
         queryString.order = "asc";
       }
-      fetch(
-        projectEndpoint + "?" + new URLSearchParams(queryString).toString(),
-      ).then((res) =>
-        res.json().then((facet) => {
-          if (!facet.error) {
-            this.itemsLength = +facet.total;
-            this.serverItems = facet.data;
-            this.loading = false;
-          }
-        }),
-      );
+      fetch(projectEndpoint + "?" + new URLSearchParams(queryString))
+        .then(res => res.json())
+        .then(list => {
+          // list — это ProjectResponse[]
+          this.itemsLength = list.length
+          // если вы хотите в колонке «Wykonawcy» выводить userEmails:
+          this.serverItems = list.map(p => ({
+            ...p,
+            contractors: p.userInitials  
+          }))
+          this.loading = false
+        })
     },
     clickItem(item, event) {
       this.project = event.item;
@@ -89,19 +90,9 @@ export default {
       <v-btn @click="add" v-if="checkIfInRole(user, [0])">Dodaj</v-btn>
     </v-card-title>
     <v-card-text>
-      <v-data-table-server
-        v-model:items-per-page="itemsPerPage"
-        :headers="headers"
-        :items="serverItems"
-        :items-length="itemsLength"
-        :loading="loading"
-        :search="search"
-        :key="tableKey"
-        @update:options="loadItems"
-        @click:row="clickItem"
-        itemsPerPageText="# elementów na stronie"
-        pageText="{0}-{1} z {2}"
-      >
+      <v-data-table-server v-model:items-per-page="itemsPerPage" :headers="headers" :items="serverItems"
+        :items-length="itemsLength" :loading="loading" :search="search" :key="tableKey" @update:options="loadItems"
+        @click:row="clickItem" itemsPerPageText="# elementów na stronie" pageText="{0}-{1} z {2}">
         <template #item.birthDate="{ item }">
           {{ new Date(item.birthDate).toLocaleDateString() }}
         </template>
@@ -109,26 +100,15 @@ export default {
           {{ item.contractors.join(" ") }}
         </template>
         <template #footer.prepend>
-          <v-text-field
-            v-model="search"
-            class="mr-5"
-            variant="outlined"
-            density="compact"
-            placeholder="szukaj..."
-            hide-details
-            prepend-icon="mdi-magnify"
-          ></v-text-field>
+          <v-text-field v-model="search" class="mr-5" variant="outlined" density="compact" placeholder="szukaj..."
+            hide-details prepend-icon="mdi-magnify"></v-text-field>
         </template>
       </v-data-table-server>
     </v-card-text>
   </v-card>
 
   <v-dialog v-model="editor" width="50%" v-if="checkIfInRole(user, [0])">
-    <ProjectEditor
-      :project="project"
-      @close="editorClose"
-      @list-changed="tableKey++"
-    />
+    <ProjectEditor :project="project" @close="editorClose" @list-changed="tableKey++" />
   </v-dialog>
 </template>
 

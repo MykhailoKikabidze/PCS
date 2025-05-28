@@ -119,8 +119,20 @@ public class ProjectService {
 
 
     private ProjectResponse mapToResponse(Project project) {
+        // старый list of emails
         List<String> emails = project.getProjectUsers().stream()
                 .map(link -> link.getUser().getEmail())
+                .distinct()
+                .toList();
+
+        // новый list of initials, например "MK"
+        List<String> initials = project.getProjectUsers().stream()
+                .map(link -> {
+                    String n = link.getUser().getName();
+                    String s = link.getUser().getSurname();
+                    // берем первый символ каждого и делаем заглавным
+                    return ("" + n.charAt(0) + s.charAt(0)).toUpperCase();
+                })
                 .distinct()
                 .toList();
 
@@ -130,6 +142,7 @@ public class ProjectService {
                 .startDate(project.getStartDate())
                 .dueDate(project.getDueDate())
                 .userEmails(emails)
+                .userInitials(initials)
                 .build();
     }
 }

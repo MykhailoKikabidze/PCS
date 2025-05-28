@@ -17,4 +17,5 @@ public class ProjectResponse {
     private LocalDate dueDate;
     /** список e-mail-ов участников */
     private List<String> userEmails;
+    private List<String> userInitials;
 }
