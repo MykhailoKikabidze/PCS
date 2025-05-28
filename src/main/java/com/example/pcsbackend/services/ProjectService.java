@@ -40,9 +40,10 @@ public class ProjectService {
                     .user(user)
                     .project(project)
                     .build();
-            projectUserRepository.save(link);
             project.getProjectUsers().add(link);
         }
+
+        projectRepository.save(project);
 
         return mapToResponse(project);
     }

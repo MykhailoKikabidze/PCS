@@ -2,6 +2,7 @@ package com.example.pcsbackend.handlers;
 
 import com.example.pcsbackend.exceptions.UserAlreadyExistsException;
 import com.example.pcsbackend.exceptions.UserNotExistsException;
+import com.example.pcsbackend.exceptions.ProjectNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,6 +18,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotExistsException.class)
     public ResponseEntity<String> handleUserNotExists(UserNotExistsException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleProjectNotFound(ProjectNotFoundException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
