@@ -51,7 +51,7 @@ export default {
       });
     },
     update() {
-      fetch(projectEndpoint, {
+      fetch(`${projectEndpoint}/${this.project.id}`, {
         method: "PUT",
         headers: { "Content-type": "application/json" },
         body: JSON.stringify(this.input),
@@ -127,9 +127,7 @@ export default {
 <template>
   <v-form v-model="isValid">
     <v-card>
-      <v-card-title>{{
-        input._id ? "Edytuj dane" : "Wprowadź dane nowego projektu"
-      }}</v-card-title>
+      <v-card-title>{{ this.project.id ? "Edytuj dane" : "Wprowadź dane nowego projektu" }}</v-card-title>
       <v-card-subtitle>
         Dane muszą spełniać odpowiednie reguły, zarówno w tym formularzu, jak i
         w backendzie.
@@ -173,7 +171,7 @@ export default {
         <v-spacer></v-spacer>
         <!-- Task management button -->
         <v-btn
-          v-if="input._id"
+          v-if="this.project.id"
           variant="elevated"
           color="primary"
           @click="showTaskModal = true"
@@ -186,7 +184,7 @@ export default {
           variant="elevated"
           @click="send"
           :disabled="!isValid"
-          v-if="!input._id"
+          v-if="!this.project.id"
           >Wyślij</v-btn
         >
         <v-btn
@@ -194,12 +192,10 @@ export default {
           variant="elevated"
           @click="update"
           :disabled="!isValid"
-          v-if="input._id"
+          v-if="this.project.id"
           >Aktualizuj</v-btn
         >
-        <v-btn color="error" variant="elevated" @click="remove" v-if="input._id"
-          >Usuń</v-btn
-        >
+        <v-btn color="error" variant="elevated" @click="remove" v-if="this.project.id">Usuń</v-btn>
         <v-btn variant="elevated" @click="close">Zamknij</v-btn>
       </v-card-actions>
     </v-card>

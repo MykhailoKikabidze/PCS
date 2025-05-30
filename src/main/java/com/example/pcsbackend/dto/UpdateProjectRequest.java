@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 @ProjectDateConstraint
-public class UpdateProjectRequest {
+public class UpdateProjectRequest implements ProjectDateValidatable {
 
     @Size(min = 2)
     @Pattern(regexp = "^[A-Za-z].*")
@@ -20,4 +20,10 @@ public class UpdateProjectRequest {
 
     /** полный новый список участников (если нужен) */
     private List<@Email String> userEmails;
+
+    @Override
+    public LocalDate getStartDate() { return startDate; }
+
+    @Override
+    public LocalDate getDueDate() { return dueDate; }
 }

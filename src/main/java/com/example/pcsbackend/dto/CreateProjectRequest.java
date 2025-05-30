@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @ProjectDateConstraint // кастомная аннотация
-public class CreateProjectRequest {
+public class CreateProjectRequest implements ProjectDateValidatable {
 
     @NotNull(message = "Name is required")
     @Size(min = 2, message = "Name must be at least 2 characters")
@@ -32,4 +32,10 @@ public class CreateProjectRequest {
 
     @NotNull @Size(min = 1)
     private List<String> userEmails;
+
+    @Override
+    public LocalDate getStartDate() { return startDate; }
+
+    @Override
+    public LocalDate getDueDate() { return dueDate; }
 }
