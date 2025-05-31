@@ -73,26 +73,18 @@ export default {
       });
     },
     remove() {
-      fetch(
-        projectEndpoint + "?" + new URLSearchParams({ _id: this.input._id }),
-        {
-          method: "DELETE",
-        },
-      ).then((res) => {
-        res
-          .json()
-          .then((data) => {
-            if (!res.ok) {
-              this.$emit("close", data.error, "error");
-            } else {
-              this.input = {};
-              this.$emit("close", `Projekt ${data.name} - usunięto`);
-              this.$emit("listChanged");
-            }
-          })
-          .catch((err) => {
-            this.$emit("close", "Dane odrzucone", "error");
-          });
+      fetch(`${projectEndpoint}/${this.project.id}`, {
+        method: "DELETE",
+      }).then((res) => {
+        if (!res.ok) this.$emit("close", res.error, "error");
+        else {
+          this.input = {};
+          this.$emit("close", `Projekt ${this.project.name} - usunięto`);
+          this.$emit("listChanged");
+        }
+      })
+      .catch((err) => {
+        console.error("Błąd:", err);
       });
     },
     setData(data) {
