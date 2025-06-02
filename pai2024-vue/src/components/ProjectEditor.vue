@@ -195,7 +195,8 @@ export default {
     <!-- Task Modal -->
     <TaskModal
       v-if="showTaskModal"
-      :project="input"
+      :project="this.project"
+      :persons="this.persons"
       @close="showTaskModal = false"
     />
   </v-form>

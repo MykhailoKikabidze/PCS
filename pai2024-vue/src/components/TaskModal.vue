@@ -1,8 +1,9 @@
 <script>
-const taskEndpoint = "/api/task";
+const taskEndpoint = "/api/tasks";
+const projectEndpoint = "/api/projects";
 
 export default {
-  props: ["project"],
+  props: ["project", "persons"],
   emits: ["close"],
   data() {
     return {
@@ -24,33 +25,28 @@ export default {
           return !!date || `Wymagana prawidłowa data`;
         },
       },
-      persons: [],
+      // persons: [],
       isEditing: false, // Track if we are editing an existing task
       selectedTaskId: null, // To identify the task being edited
     };
   },
   methods: {
     loadTasks() {
-      fetch(`${taskEndpoint}?project_id=${this.project._id}`)
+      fetch(`${taskEndpoint}/${this.project.id}`)
         .then((res) => res.json())
         .then((data) => {
-          if (!data.error) {
-            this.tasks = data;
-          }
+          if (!data.error) this.tasks = data;
         })
         .catch((err) => console.error("Error loading tasks:", err));
     },
-    loadPersons() {
-      fetch("/api/person")
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.error) {
-            const contractorsSet = new Set(this.project.contractor_ids);
-            this.persons = data.data.filter((p) => contractorsSet.has(p._id));
-          }
-        })
-        .catch((err) => console.error("Error loading persons:", err));
-    },
+    // loadPersons() {
+    //   fetch(`${projectEndpoint}/${this.project.id}/users`)
+    //     .then((res) => res.json())
+    //     .then((data) => {
+    //       if (!data.error) this.persons = data;
+    //     })
+    //     .catch((err) => console.error("Error loading persons:", err));
+    // },
     saveTask() {
       const method = this.isEditing ? "PUT" : "POST";
       const body = {
@@ -58,12 +54,12 @@ export default {
         startDate: this.input.startDate,
         endDate: this.input.endDate,
         assignee_ids: this.input.assignee_ids,
-        project_id: this.project._id,
+        project_id: this.project.id,
         _id: this.isEditing ? this.selectedTaskId : undefined,
       };
 
-      fetch(taskEndpoint, {
-        method,
+      fetch(`${taskEndpoint}${this.isEditing ? `/${this.project.id}` : ""}`, {
+        method: method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       })
@@ -77,7 +73,7 @@ export default {
         .catch((err) => console.error("Error saving task:", err));
     },
     deleteTask(taskId) {
-      fetch(`${taskEndpoint}?_id=${taskId}`, { method: "DELETE" })
+      fetch(`${taskEndpoint}/${taskId}`, { method: "DELETE" })
         .then((res) => res.json())
         .then((data) => {
           if (!data.error) {
@@ -86,16 +82,16 @@ export default {
         })
         .catch((err) => console.error("Error deleting task:", err));
     },
-    editTask(task) {
-      this.isEditing = true;
-      this.selectedTaskId = task._id;
-      this.input = {
-        name: task.name,
-        startDate: task.startDate,
-        endDate: task.endDate,
-        assignee_ids: task.assignee_ids,
-      };
-    },
+    // editTask(task) {
+    //   this.isEditing = true;
+    //   this.selectedTaskId = task._id;
+    //   this.input = {
+    //     name: task.name,
+    //     startDate: task.startDate,
+    //     endDate: task.endDate,
+    //     assignee_ids: task.assignee_ids,
+    //   };
+    // },
     resetInput() {
       this.isEditing = false;
       this.selectedTaskId = null;
@@ -112,7 +108,7 @@ export default {
   },
   mounted() {
     this.loadTasks();
-    this.loadPersons();
+    // this.loadPersons();
   },
 };
 </script>
@@ -171,8 +167,8 @@ export default {
           <v-autocomplete
             v-model="input.assignee_ids"
             :items="persons"
-            :item-title="(item) => item.firstName + ' ' + item.lastName"
-            item-value="_id"
+            :item-title="(item) => item.name + ' ' + item.surname"
+            item-value="id"
             label="Wybierz Wykonawców"
             multiple
           ></v-autocomplete>

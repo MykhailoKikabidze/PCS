@@ -145,4 +145,13 @@ public class ProjectService {
                 .userInitials(initials)
                 .build();
     }
+
+    public List<UserDTO> getUsersInProject(UUID projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        return project.getProjectUsers().stream()
+                .map(projectUser -> new UserDTO(projectUser.getUser()))
+                .toList();
+    }
 }

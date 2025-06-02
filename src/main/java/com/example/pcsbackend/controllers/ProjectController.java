@@ -53,4 +53,10 @@ public class ProjectController {
         projectService.deleteProject(projectId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{projectId}/users")
+    public ResponseEntity<List<UserDTO>> getUsersInProject(@PathVariable UUID projectId) {
+        List<UserDTO> users = projectService.getUsersInProject(projectId);
+        return ResponseEntity.ok(users);
+    }
 }
