@@ -28,7 +28,7 @@ export default {
               this.$emit("close", data, "error");
             } else {
               this.input = {};
-              this.$emit("close", "Zalogowano");
+              this.$emit("close", "Zarejestrowano");
             }
           })
           .catch((err) => {

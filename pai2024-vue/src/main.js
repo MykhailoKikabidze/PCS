@@ -25,7 +25,6 @@ import Dashboard from "./components/Dashboard.vue";
 import ProjectList from "./components/ProjectList.vue";
 import Charts from "./components/Charts.vue";
 import Analysis from "./components/Analysis.vue";
-import Chat from "./components/Chat.vue";
 import Settings from "./components/Settings.vue";
 
 const router = createRouter({
@@ -49,12 +48,6 @@ const router = createRouter({
       component: Charts,
       title: "Wykresy",
       icon: "mdi-chart-bar",
-    },
-    {
-      path: "/chat",
-      component: Chat,
-      title: "Czat",
-      icon: "mdi-chat-outline",
     },
     {
       path: "/analysis",
