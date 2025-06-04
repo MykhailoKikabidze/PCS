@@ -32,7 +32,10 @@ const getStandardGanttData = (entities) => ({
           id: entity.id,
           label: entity.name,
           style: {
-            background: entity.dueDate ? "#e09b69" : "#4caf50",
+            background:
+              entity.dueDate && entity.dueDate < todayDate
+                ? "#e09b69"
+                : "#4caf50",
             borderRadius: "5px",
             color: "white",
           },
