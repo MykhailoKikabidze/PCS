@@ -1,5 +1,6 @@
 package com.example.pcsbackend.handlers;
 
+import com.example.pcsbackend.exceptions.TaskNotFoundException;
 import com.example.pcsbackend.exceptions.UserAlreadyExistsException;
 import com.example.pcsbackend.exceptions.UserNotExistsException;
 import com.example.pcsbackend.exceptions.ProjectNotFoundException;
@@ -23,6 +24,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<String> handleProjectNotFound(ProjectNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleTaskNotFound(TaskNotFoundException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
