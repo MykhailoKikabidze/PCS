@@ -3,7 +3,7 @@ const taskEndpoint = "/api/tasks";
 const projectEndpoint = "/api/projects";
 
 export default {
-  props: ["project", "persons"],
+  props: ["project"],
   emits: ["close", "popup"],
   data() {
     return {
@@ -28,6 +28,7 @@ export default {
       // persons: [],
       isEditing: false, // Track if we are editing an existing task
       selectedTaskId: null, // To identify the task being edited
+      loadPersonList: true,
     };
   },
   methods: {
@@ -39,15 +40,15 @@ export default {
         })
         .catch((err) => console.error("Error loading tasks:", err));
     },
-    // loadPersons() {
-    //   fetch(`${projectEndpoint}/${this.project.id}/users`)
-    //     .then((res) => res.json())
-    //     .then((data) => {
-    //       if (!data.error) this.persons = data;
-    //     })
-    //     .catch((err) => console.error("Error loading persons:", err));
-    // },
-    // Сохранить новую задачу или обновить существующую
+    loadPersons() {
+      fetch(`${projectEndpoint}/${this.project.id}/users`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.error) this.persons = data;
+          this.loadPersonList = false;
+        })
+        .catch((err) => console.error("Error loading persons:", err.message));
+    },
     saveTask() {
       let url = taskEndpoint;
       let method = "POST";
@@ -117,6 +118,9 @@ export default {
         endDate: "",
         assignee_ids: [],
       };
+      this.$nextTick(() => {
+        this.$refs.taskForm?.resetValidation();
+      });
     },
     closeModal() {
       this.$emit("close");
@@ -124,13 +128,13 @@ export default {
   },
   mounted() {
     this.loadTasks();
-    // this.loadPersons();
+    this.loadPersons();
   },
 };
 </script>
 
 <template>
-  <v-dialog v-model="isDialogOpen" persistent max-width="800px">
+  <v-dialog v-if="!loadPersonList" v-model="isDialogOpen" persistent max-width="800px">
     <v-card>
       <v-card-title>Zarządzaj Zadaniami</v-card-title>
       <v-card-text>
@@ -151,7 +155,7 @@ export default {
               </small>
             </div>
             <template v-slot:append>
-              <v-btn icon @click="editTask(task)">
+              <v-btn icon @click="editTask(task)" class="mr-2">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
               <v-btn icon @click="deleteTask(task)">
@@ -162,7 +166,7 @@ export default {
         </v-list>
 
         <!-- Task Form -->
-        <v-form>
+        <v-form ref="taskForm">
           <v-text-field
             v-model="input.name"
             label="Nazwa Zadania"
@@ -188,7 +192,7 @@ export default {
             label="Wybierz Wykonawców"
             multiple
           ></v-autocomplete>
-          <v-btn @click="saveTask" color="primary">
+          <v-btn @click="saveTask" color="primary" class="mr-2">
             {{ isEditing ? "Zaktualizuj" : "Dodaj" }} Zadanie
           </v-btn>
           <v-btn @click="resetInput">Anuluj</v-btn>

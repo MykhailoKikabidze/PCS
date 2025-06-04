@@ -11,6 +11,7 @@ export default {
     return {
       isValid: false,
       input: {},
+      persons: [],
       rules: {
         startsWithLetter: (value) => {
           const pattern = /^\p{L}/u;
@@ -199,7 +200,6 @@ export default {
     <TaskModal
       v-if="showTaskModal"
       :project="this.project"
-      :persons="this.persons"
       @close="taskEditorClose"
       @popup="(text, color) => $emit('popup', text, color)"
     />
