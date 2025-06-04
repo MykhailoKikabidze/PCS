@@ -24,6 +24,13 @@ export default {
           const date = new Date(value);
           return !!date || `Wymagana prawidłowa data`;
         },
+        dueDateAfterStartDate: (dueDate) => {
+          const startDate = new Date(this.input.startDate);
+          const endDate = new Date(dueDate);
+          if (!dueDate || !this.input.startDate) return true;
+          if (isNaN(startDate) || isNaN(endDate)) return true;
+          return endDate >= startDate || "Data końca musi być po dacie startu";
+        },
       },
       isEditing: false, 
       selectedTaskId: null,
@@ -179,7 +186,7 @@ export default {
             type="date"
             v-model="input.endDate"
             label="Data Zakończenia"
-            :rules="[rules.validDate]"
+            :rules="[rules.validDate, rules.dueDateAfterStartDate]"
           ></v-text-field>
           <v-autocomplete
             v-model="input.assignee_ids"
