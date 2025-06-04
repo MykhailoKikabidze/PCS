@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@TaskDateConstraint  // собственная валидация дат относительно проекта
+@TaskDateConstraint
 public class Task {
 
     @Id

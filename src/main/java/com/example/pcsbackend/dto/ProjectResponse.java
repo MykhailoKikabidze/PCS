@@ -15,7 +15,6 @@ public class ProjectResponse {
     private String name;
     private LocalDate startDate;
     private LocalDate dueDate;
-    /** список e-mail-ов участников */
     private List<String> userEmails;
     private List<String> userInitials;
 }

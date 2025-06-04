@@ -18,7 +18,6 @@ public class UpdateProjectRequest implements ProjectDateValidatable {
     private LocalDate startDate;
     private LocalDate dueDate;
 
-    /** полный новый список участников (если нужен) */
     private List<@Email String> userEmails;
 
     @Override

@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ProjectDateConstraint // кастомная аннотация
+@ProjectDateConstraint
 public class CreateProjectRequest implements ProjectDateValidatable {
 
     @NotNull(message = "Name is required")

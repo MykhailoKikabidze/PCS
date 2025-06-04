@@ -25,9 +25,8 @@ export default {
           return !!date || `Wymagana prawidłowa data`;
         },
       },
-      // persons: [],
-      isEditing: false, // Track if we are editing an existing task
-      selectedTaskId: null, // To identify the task being edited
+      isEditing: false, 
+      selectedTaskId: null,
       loadPersonList: true,
     };
   },
@@ -53,13 +52,11 @@ export default {
       let url = taskEndpoint;
       let method = "POST";
 
-      // Если мы редактируем – меняем URL и метод
       if (this.isEditing && this.selectedTaskId) {
         url = `${taskEndpoint}/${this.selectedTaskId}`;
         method = "PUT";
       }
 
-      // Собираем тело запроса
       const body = {
         name: this.input.name,
         startDate: this.input.startDate,

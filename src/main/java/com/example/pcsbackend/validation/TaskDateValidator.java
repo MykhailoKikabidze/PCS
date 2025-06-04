@@ -18,7 +18,6 @@ public class TaskDateValidator implements ConstraintValidator<TaskDateConstraint
         var tStart = task.getStartDate();
         var tDue   = task.getDueDate();
 
-        // Если даты проекта не заданы – пропускаем проверку
         if (pStart == null && pDue == null) return true;
 
         boolean ok = true;

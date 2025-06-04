@@ -64,11 +64,9 @@ public class ProjectService {
 
     @Transactional
     public ProjectResponse updateProject(UUID projectId, UpdateProjectRequest req) {
-        // 1. Загрузка проекта или выброс ProjectNotFoundException
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ProjectNotFoundException(projectId));
 
-        // 2. Обновление простых полей, если они заданы
         if (req.getName() != null) {
             project.setName(req.getName());
         }
@@ -79,45 +77,37 @@ public class ProjectService {
             project.setDueDate(req.getDueDate());
         }
 
-        // 3. Проверка валидности дат
         if (project.getStartDate() != null
                 && project.getDueDate() != null
                 && !project.getStartDate().isBefore(project.getDueDate())) {
             throw new IllegalArgumentException("startDate must be before dueDate");
         }
 
-        // 4. Синхронизация списка участников, если пришёл список email-ов
         if (req.getUserEmails() != null) {
             Set<String> incomingEmails = new HashSet<>(req.getUserEmails());
 
-            // 4a. Удаляем все связи, email которых отсутствует в incomingEmails
             Iterator<ProjectUser> iterator = project.getProjectUsers().iterator();
             while (iterator.hasNext()) {
                 ProjectUser existingLink = iterator.next();
                 String existingEmail = existingLink.getUser().getEmail();
                 if (!incomingEmails.contains(existingEmail)) {
-                    // удаляем из коллекции и помечаем на удаление в БД
                     iterator.remove();
                     projectUserRepository.delete(existingLink);
                 }
             }
 
-            // 4b. Собираем email-ы, которые уже остались в коллекции
             Set<String> stillPresent = project.getProjectUsers().stream()
                     .map(link -> link.getUser().getEmail())
                     .collect(Collectors.toSet());
 
-            // 4c. Для каждого нового email создаём связь, если её ещё нет
             for (String email : incomingEmails) {
                 if (stillPresent.contains(email)) {
-                    continue; // уже есть — пропускаем
+                    continue;
                 }
 
                 User user = userRepository.findByEmail(email)
                         .orElseThrow(() -> new UserNotExistsException(email));
 
-                // проверим ещё раз на случай параллельных изменений,
-                // чтобы не попытаться добавить дубликат в БД
                 boolean alreadyLinked = projectUserRepository
                         .existsById_UserIdAndId_ProjectId(user.getId(), project.getId());
                 if (alreadyLinked) {
@@ -130,12 +120,10 @@ public class ProjectService {
                         .project(project)
                         .build();
 
-                // добавляем в коллекцию — благодаря cascade = ALL Hibernate вставит запись в БД при flush
                 project.getProjectUsers().add(newLink);
             }
         }
 
-        // 5. Возвращаем DTO; Hibernate автоматически сохранит все изменения (удаления и вставки) по аннотации @Transactional
         return mapToResponse(project);
     }
 
@@ -150,18 +138,15 @@ public class ProjectService {
 
 
     private ProjectResponse mapToResponse(Project project) {
-        // старый list of emails
         List<String> emails = project.getProjectUsers().stream()
                 .map(link -> link.getUser().getEmail())
                 .distinct()
                 .toList();
 
-        // новый list of initials, например "MK"
         List<String> initials = project.getProjectUsers().stream()
                 .map(link -> {
                     String n = link.getUser().getName();
                     String s = link.getUser().getSurname();
-                    // берем первый символ каждого и делаем заглавным
                     return ("" + n.charAt(0) + s.charAt(0)).toUpperCase();
                 })
                 .distinct()
