@@ -1,5 +1,6 @@
 package com.example.pcsbackend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -17,11 +18,14 @@ public class UpdateTaskRequest {
     private LocalDate startDate;
 
     @NotNull
+    @JsonProperty("endDate")
     private LocalDate dueDate;
 
     @NotNull
+    @JsonProperty("project_id")
     private UUID projectId;
 
     @NotNull
+    @JsonProperty("assignee_ids")
     private List<UUID> assigneeIds;
 }
