@@ -158,7 +158,7 @@ export default {
           v-model="selectedProjectId"
           :items="projects"
           :item-title="(item) => item.name"
-          item-value="_id"
+          item-value="id"
           label="Wybierz projekt"
         ></v-select>
       </v-col>
