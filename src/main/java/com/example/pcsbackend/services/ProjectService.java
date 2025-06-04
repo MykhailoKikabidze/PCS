@@ -64,50 +64,81 @@ public class ProjectService {
 
     @Transactional
     public ProjectResponse updateProject(UUID projectId, UpdateProjectRequest req) {
-
+        // 1. Загрузка проекта или выброс ProjectNotFoundException
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ProjectNotFoundException(projectId));
 
-        if (req.getName() != null)        project.setName(req.getName());
-        if (req.getStartDate() != null)   project.setStartDate(req.getStartDate());
-        if (req.getDueDate() != null)     project.setDueDate(req.getDueDate());
+        // 2. Обновление простых полей, если они заданы
+        if (req.getName() != null) {
+            project.setName(req.getName());
+        }
+        if (req.getStartDate() != null) {
+            project.setStartDate(req.getStartDate());
+        }
+        if (req.getDueDate() != null) {
+            project.setDueDate(req.getDueDate());
+        }
 
-        if (project.getStartDate() != null && project.getDueDate() != null &&
-                !project.getStartDate().isBefore(project.getDueDate())) {
+        // 3. Проверка валидности дат
+        if (project.getStartDate() != null
+                && project.getDueDate() != null
+                && !project.getStartDate().isBefore(project.getDueDate())) {
             throw new IllegalArgumentException("startDate must be before dueDate");
         }
 
+        // 4. Синхронизация списка участников, если пришёл список email-ов
         if (req.getUserEmails() != null) {
+            Set<String> incomingEmails = new HashSet<>(req.getUserEmails());
 
-            Set<String> incoming = new HashSet<>(req.getUserEmails());
-            project.getProjectUsers().removeIf(link -> {
-                boolean toRemove = !incoming.contains(link.getUser().getEmail());
-                if (toRemove) projectUserRepository.delete(link);
-                return toRemove;
-            });
+            // 4a. Удаляем все связи, email которых отсутствует в incomingEmails
+            Iterator<ProjectUser> iterator = project.getProjectUsers().iterator();
+            while (iterator.hasNext()) {
+                ProjectUser existingLink = iterator.next();
+                String existingEmail = existingLink.getUser().getEmail();
+                if (!incomingEmails.contains(existingEmail)) {
+                    // удаляем из коллекции и помечаем на удаление в БД
+                    iterator.remove();
+                    projectUserRepository.delete(existingLink);
+                }
+            }
 
-            Set<String> existing = project.getProjectUsers().stream()
+            // 4b. Собираем email-ы, которые уже остались в коллекции
+            Set<String> stillPresent = project.getProjectUsers().stream()
                     .map(link -> link.getUser().getEmail())
                     .collect(Collectors.toSet());
 
-            for (String email : incoming) {
-                if (existing.contains(email)) continue;
+            // 4c. Для каждого нового email создаём связь, если её ещё нет
+            for (String email : incomingEmails) {
+                if (stillPresent.contains(email)) {
+                    continue; // уже есть — пропускаем
+                }
 
                 User user = userRepository.findByEmail(email)
                         .orElseThrow(() -> new UserNotExistsException(email));
 
-                ProjectUser link = ProjectUser.builder()
+                // проверим ещё раз на случай параллельных изменений,
+                // чтобы не попытаться добавить дубликат в БД
+                boolean alreadyLinked = projectUserRepository
+                        .existsById_UserIdAndId_ProjectId(user.getId(), project.getId());
+                if (alreadyLinked) {
+                    continue;
+                }
+
+                ProjectUser newLink = ProjectUser.builder()
                         .id(new ProjectUserId(user.getId(), project.getId()))
                         .user(user)
                         .project(project)
                         .build();
-                projectUserRepository.save(link);
-                project.getProjectUsers().add(link);
+
+                // добавляем в коллекцию — благодаря cascade = ALL Hibernate вставит запись в БД при flush
+                project.getProjectUsers().add(newLink);
             }
         }
 
+        // 5. Возвращаем DTO; Hibernate автоматически сохранит все изменения (удаления и вставки) по аннотации @Transactional
         return mapToResponse(project);
     }
+
 
 
     @Transactional
