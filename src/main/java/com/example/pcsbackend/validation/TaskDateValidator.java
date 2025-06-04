@@ -28,6 +28,9 @@ public class TaskDateValidator implements ConstraintValidator<TaskDateConstraint
         if (pDue != null && tDue != null) {
             ok &= !tDue.isAfter(pDue);
         }
+        if (tStart != null & tDue != null) {
+            ok &= tStart.isBefore(tDue);
+        }
         return ok;
     }
 }
