@@ -26,7 +26,7 @@ export default {
     };
   },
   props: ["project"],
-  emits: ["close", "listChanged"],
+  emits: ["close", "listChanged", "popup"],
   methods: {
     send() {
       fetch(projectEndpoint, {
@@ -97,6 +97,9 @@ export default {
     },
     close() {
       this.$emit("close");
+    },
+    taskEditorClose() {
+      this.showTaskModal = false;
     },
   },
   mounted() {
@@ -197,7 +200,8 @@ export default {
       v-if="showTaskModal"
       :project="this.project"
       :persons="this.persons"
-      @close="showTaskModal = false"
+      @close="taskEditorClose"
+      @popup="(text, color) => $emit('popup', text, color)"
     />
   </v-form>
 </template>

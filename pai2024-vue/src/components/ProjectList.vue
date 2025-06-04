@@ -108,7 +108,7 @@ export default {
   </v-card>
 
   <v-dialog v-model="editor" width="50%" v-if="checkIfInRole(user, [0])">
-    <ProjectEditor :project="project" @close="editorClose" @list-changed="tableKey++" />
+    <ProjectEditor :project="project" @close="editorClose" @list-changed="tableKey++" @popup="(text, color) => $emit('popup', text, color)"/>
   </v-dialog>
 </template>
 

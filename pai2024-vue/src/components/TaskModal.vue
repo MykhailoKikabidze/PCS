@@ -4,7 +4,7 @@ const projectEndpoint = "/api/projects";
 
 export default {
   props: ["project", "persons"],
-  emits: ["close"],
+  emits: ["close", "popup"],
   data() {
     return {
       isDialogOpen: true,
@@ -87,10 +87,10 @@ export default {
     deleteTask(task) {
       fetch(`${taskEndpoint}/${task.id}`, { method: "DELETE" })
       .then((res) => {
-        if (!res.ok) this.$emit("popup", res.error, "error");
+        if (!res.ok) this.$emit("popup", "Błąd", "error");
         else {
           this.input = {};
-          this.$emit("popup", `Task ${task.name} - usunięto`, "primary")
+          this.$emit("popup", `Task ${task.name} - usunięto`)
           this.loadTasks();
         }
       })
