@@ -1,9 +1,10 @@
 <script>
-const taskEndpoint = "/api/task";
+const taskEndpoint = "/api/tasks";
+const projectEndpoint = "/api/projects";
 
 export default {
-  props: ["project"],
-  emits: ["close"],
+  props: ["project", "persons"],
+  emits: ["close", "popup"],
   data() {
     return {
       isDialogOpen: true,
@@ -24,76 +25,87 @@ export default {
           return !!date || `Wymagana prawidłowa data`;
         },
       },
-      persons: [],
+      // persons: [],
       isEditing: false, // Track if we are editing an existing task
       selectedTaskId: null, // To identify the task being edited
     };
   },
   methods: {
     loadTasks() {
-      fetch(`${taskEndpoint}?project_id=${this.project._id}`)
+      fetch(`${taskEndpoint}/${this.project.id}`)
         .then((res) => res.json())
         .then((data) => {
-          if (!data.error) {
-            this.tasks = data;
-          }
+          if (!data.error) this.tasks = data;
         })
         .catch((err) => console.error("Error loading tasks:", err));
     },
-    loadPersons() {
-      fetch("/api/person")
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.error) {
-            const contractorsSet = new Set(this.project.contractor_ids);
-            this.persons = data.data.filter((p) => contractorsSet.has(p._id));
-          }
-        })
-        .catch((err) => console.error("Error loading persons:", err));
-    },
+    // loadPersons() {
+    //   fetch(`${projectEndpoint}/${this.project.id}/users`)
+    //     .then((res) => res.json())
+    //     .then((data) => {
+    //       if (!data.error) this.persons = data;
+    //     })
+    //     .catch((err) => console.error("Error loading persons:", err));
+    // },
+    // Сохранить новую задачу или обновить существующую
     saveTask() {
-      const method = this.isEditing ? "PUT" : "POST";
+      let url = taskEndpoint;
+      let method = "POST";
+
+      // Если мы редактируем – меняем URL и метод
+      if (this.isEditing && this.selectedTaskId) {
+        url = `${taskEndpoint}/${this.selectedTaskId}`;
+        method = "PUT";
+      }
+
+      // Собираем тело запроса
       const body = {
         name: this.input.name,
         startDate: this.input.startDate,
         endDate: this.input.endDate,
         assignee_ids: this.input.assignee_ids,
-        project_id: this.project._id,
-        _id: this.isEditing ? this.selectedTaskId : undefined,
+        project_id: this.project.id,
+        ...(method === "POST" ? { project_id: this.project.id } : {})
       };
 
-      fetch(taskEndpoint, {
-        method,
+      fetch(url, {
+        method: method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(body)
       })
-        .then((res) => res.json())
-        .then((data) => {
+        .then(res => res.json())
+        .then(data => {
           if (!data.error) {
             this.loadTasks();
             this.resetInput();
+          } else {
+            console.error("Ошибка от сервера:", data.error);
           }
         })
-        .catch((err) => console.error("Error saving task:", err));
+        .catch(err => console.error("Error saving task:", err));
     },
-    deleteTask(taskId) {
-      fetch(`${taskEndpoint}?_id=${taskId}`, { method: "DELETE" })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.error) {
-            this.loadTasks();
-          }
-        })
-        .catch((err) => console.error("Error deleting task:", err));
+    deleteTask(task) {
+      fetch(`${taskEndpoint}/${task.id}`, { method: "DELETE" })
+      .then((res) => {
+        if (!res.ok) this.$emit("popup", "Błąd", "error");
+        else {
+          this.input = {};
+          this.$emit("popup", `Task ${task.name} - usunięto`)
+          this.loadTasks();
+        }
+      })
+      .catch((err) => { console.error("Błąd:", err); });
     },
     editTask(task) {
       this.isEditing = true;
-      this.selectedTaskId = task._id;
+      this.selectedTaskId = task.id;
       this.input = {
         name: task.name,
         startDate: task.startDate,
-        endDate: task.endDate,
-        assignee_ids: task.assignee_ids,
+        endDate: task.dueDate,
+        assignee_ids: task.assignees 
+    ? task.assignees.map(a => a.id) 
+    : [],  
       };
     },
     resetInput() {
@@ -112,7 +124,7 @@ export default {
   },
   mounted() {
     this.loadTasks();
-    this.loadPersons();
+    // this.loadPersons();
   },
 };
 </script>
@@ -124,7 +136,7 @@ export default {
       <v-card-text>
         <!-- Task List -->
         <v-list>
-          <v-list-item v-for="task in tasks" :key="task._id">
+          <v-list-item v-for="task in tasks" :key="task.id">
             <div>
               <div>{{ task.name }}</div>
               <small>
@@ -132,8 +144,8 @@ export default {
                 {{ new Date(task.startDate).toLocaleDateString() }}
                 -
                 {{
-                  task.endDate
-                    ? "End: " + new Date(task.endDate).toLocaleDateString()
+                  task.dueDate
+                    ? "End: " + new Date(task.dueDate).toLocaleDateString()
                     : "in progress"
                 }}
               </small>
@@ -142,7 +154,7 @@ export default {
               <v-btn icon @click="editTask(task)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-btn icon @click="deleteTask(task._id)">
+              <v-btn icon @click="deleteTask(task)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </template>
@@ -171,8 +183,8 @@ export default {
           <v-autocomplete
             v-model="input.assignee_ids"
             :items="persons"
-            :item-title="(item) => item.firstName + ' ' + item.lastName"
-            item-value="_id"
+            :item-title="(item) => item.name + ' ' + item.surname"
+            item-value="id"
             label="Wybierz Wykonawców"
             multiple
           ></v-autocomplete>
