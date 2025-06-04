@@ -47,51 +47,67 @@ export default {
     //     })
     //     .catch((err) => console.error("Error loading persons:", err));
     // },
+    // Сохранить новую задачу или обновить существующую
     saveTask() {
-      const method = this.isEditing ? "PUT" : "POST";
+      let url = taskEndpoint;
+      let method = "POST";
+
+      // Если мы редактируем – меняем URL и метод
+      if (this.isEditing && this.selectedTaskId) {
+        url = `${taskEndpoint}/${this.selectedTaskId}`;
+        method = "PUT";
+      }
+
+      // Собираем тело запроса
       const body = {
         name: this.input.name,
         startDate: this.input.startDate,
         endDate: this.input.endDate,
         assignee_ids: this.input.assignee_ids,
         project_id: this.project.id,
-        _id: this.isEditing ? this.selectedTaskId : undefined,
+        ...(method === "POST" ? { project_id: this.project.id } : {})
       };
 
-      fetch(`${taskEndpoint}${this.isEditing ? `/${this.project.id}` : ""}`, {
+      fetch(url, {
         method: method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(body)
       })
-        .then((res) => res.json())
-        .then((data) => {
+        .then(res => res.json())
+        .then(data => {
           if (!data.error) {
             this.loadTasks();
             this.resetInput();
+          } else {
+            console.error("Ошибка от сервера:", data.error);
           }
         })
-        .catch((err) => console.error("Error saving task:", err));
+        .catch(err => console.error("Error saving task:", err));
     },
-    deleteTask(taskId) {
-      fetch(`${taskEndpoint}/${taskId}`, { method: "DELETE" })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.error) {
-            this.loadTasks();
-          }
-        })
-        .catch((err) => console.error("Error deleting task:", err));
+    deleteTask(task) {
+      fetch(`${taskEndpoint}/${task.id}`, { method: "DELETE" })
+      .then((res) => {
+        if (!res.ok) this.$emit("popup", res.error, "error");
+        else {
+          this.input = {};
+          this.$emit("popup", `Task ${task.name} - usunięto`, "primary")
+          this.loadTasks();
+        }
+      })
+      .catch((err) => { console.error("Błąd:", err); });
     },
-    // editTask(task) {
-    //   this.isEditing = true;
-    //   this.selectedTaskId = task._id;
-    //   this.input = {
-    //     name: task.name,
-    //     startDate: task.startDate,
-    //     endDate: task.endDate,
-    //     assignee_ids: task.assignee_ids,
-    //   };
-    // },
+    editTask(task) {
+      this.isEditing = true;
+      this.selectedTaskId = task.id;
+      this.input = {
+        name: task.name,
+        startDate: task.startDate,
+        endDate: task.dueDate,
+        assignee_ids: task.assignees 
+    ? task.assignees.map(a => a.id) 
+    : [],  
+      };
+    },
     resetInput() {
       this.isEditing = false;
       this.selectedTaskId = null;
@@ -120,7 +136,7 @@ export default {
       <v-card-text>
         <!-- Task List -->
         <v-list>
-          <v-list-item v-for="task in tasks" :key="task._id">
+          <v-list-item v-for="task in tasks" :key="task.id">
             <div>
               <div>{{ task.name }}</div>
               <small>
@@ -128,8 +144,8 @@ export default {
                 {{ new Date(task.startDate).toLocaleDateString() }}
                 -
                 {{
-                  task.endDate
-                    ? "End: " + new Date(task.endDate).toLocaleDateString()
+                  task.dueDate
+                    ? "End: " + new Date(task.dueDate).toLocaleDateString()
                     : "in progress"
                 }}
               </small>
@@ -138,7 +154,7 @@ export default {
               <v-btn icon @click="editTask(task)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-btn icon @click="deleteTask(task._id)">
+              <v-btn icon @click="deleteTask(task)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </template>
