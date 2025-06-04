@@ -18,12 +18,14 @@ public class CreateTaskRequest {
     private LocalDate startDate;
 
     @NotNull
+    @JsonProperty("endDate")
     private LocalDate dueDate;
 
     @NotNull
+    @JsonProperty("project_id")
     private UUID projectId;
 
     @NotNull
-    // @JsonProperty("assignee_ids")
+    @JsonProperty("assignee_ids")
     private List<UUID> assigneeIds;
 }
