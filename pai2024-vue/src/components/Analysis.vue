@@ -1,6 +1,6 @@
 <script>
-const projectEndpoint = "/api/project";
-const taskEndpoint = "/api/task";
+const projectEndpoint = "/api/projects";
+const taskEndpoint = "/api/tasks";
 
 const today = new Date();
 const todayDate = today.toISOString().substring(0, 10);
@@ -17,7 +17,7 @@ const findDate = (arr, getProp, compare) => {
 };
 
 const extractStartDate = (entity) => entity.startDate;
-const extractEndDate = (entity) => entity.endDate || todayDate;
+const extractEndDate = (entity) => entity.dueDate || todayDate;
 
 const getStandardGanttData = (entities) => ({
   start: findDate(entities, extractStartDate, Math.min) + " 00:00",
@@ -29,10 +29,10 @@ const getStandardGanttData = (entities) => ({
         start: extractStartDate(entity) + " 00:00",
         end: extractEndDate(entity) + " 23:59",
         ganttBarConfig: {
-          id: entity._id,
+          id: entity.id,
           label: entity.name,
           style: {
-            background: entity.endDate ? "#e09b69" : "#4caf50",
+            background: entity.dueDate ? "#e09b69" : "#4caf50",
             borderRadius: "5px",
             color: "white",
           },
@@ -58,7 +58,7 @@ export default {
         .then((res) => res.json())
         .then((data) => {
           if (!data.error) {
-            this.projects = data.data;
+            this.projects = data;
             this.prepareProjectGanttData();
           }
         })
@@ -66,7 +66,7 @@ export default {
     },
     loadTasksForProject() {
       if (this.selectedProjectId) {
-        fetch(`${taskEndpoint}?project_id=${this.selectedProjectId}`)
+        fetch(`${taskEndpoint}/${this.selectedProjectId}`)
           .then((res) => res.json())
           .then((data) => {
             if (!data.error) {
