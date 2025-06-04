@@ -37,6 +37,7 @@ const router = createRouter({
       title: "Pulpit",
       icon: "mdi-home",
       public: true,
+      props: true,
     },
     {
       path: "/projects",

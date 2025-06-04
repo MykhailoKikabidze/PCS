@@ -13,10 +13,11 @@ export default {
     return {
       snackbar: { on: false },
       generalError: false,
-      user: {},
+      user: null,
       loginDialog: false,
       logoutDialog: false,
       signupDialog: false,
+      loadingUser: true,
     };
   },
   methods: {
@@ -46,10 +47,12 @@ export default {
           }
           res.json().then((data) => {
             this.user = data;
+            this.loadingUser = false;
           });
         })
         .catch((err) => {
           this.generalError = true;
+          this.loadingUser = false;
         });
     },
   },
@@ -60,7 +63,7 @@ export default {
 </script>
 
 <template>
-  <v-app v-if="!generalError">
+  <v-app v-if="!loadingUser && !generalError">
     <!-- <v-app> -->
     <v-navigation-drawer expand-on-hover rail permanent>
       <v-list nav>
@@ -69,7 +72,7 @@ export default {
           :to="route.path"
           :title="route.title"
           :prepend-icon="route.icon"
-          v-show="route.public || user?.name"
+          v-show="route.public || this.user?.name"
           exact
         ></v-list-item>
       </v-list>
@@ -84,7 +87,7 @@ export default {
           prepend-icon="mdi-login"
           title="Login"
           exact
-          v-if="!user.name"
+          v-if="this.user && !this.user.name"
         />
         <v-list-item
           key="Login"
@@ -93,7 +96,7 @@ export default {
           prepend-icon="mdi-account-plus"
           title="Utwórz konto"
           exact
-          v-if="!user.name"
+          v-if="this.user && !this.user.name"
         />
         <v-list-item
           key="Logout"
@@ -102,13 +105,13 @@ export default {
           prepend-icon="mdi-logout"
           title="Logout"
           exact
-          v-if="user.name"
+          v-if="this.user && this.user.name"
         />
       </v-list>
     </v-navigation-drawer>
 
     <v-main>
-      <router-view @popup="onPopup" :user="user"></router-view>
+      <router-view :user="this.user" @popup="onPopup"/>
     </v-main>
 
     <v-dialog v-model="signupDialog" width="33%">
