@@ -144,7 +144,7 @@ export default {
         >
           <g-gantt-row
             v-for="project in projectGanttData.entities"
-            :key="project._id"
+            :key="project.id"
             :label="project.label"
             :bars="project.bars"
           />
@@ -176,7 +176,7 @@ export default {
         >
           <g-gantt-row
             v-for="task in taskGanttData.entities"
-            :key="task._id"
+            :key="task.id"
             :label="task.label"
             :bars="task.bars"
           />
