@@ -23,7 +23,6 @@ const vuetify = createVuetify({
 import { createRouter, createWebHashHistory } from "vue-router";
 import Dashboard from "./components/Dashboard.vue";
 import ProjectList from "./components/ProjectList.vue";
-import Charts from "./components/Charts.vue";
 import Analysis from "./components/Analysis.vue";
 import Settings from "./components/Settings.vue";
 
@@ -43,12 +42,6 @@ const router = createRouter({
       component: ProjectList,
       title: "Projekty",
       icon: "mdi-projector",
-    },
-    {
-      path: "/charts",
-      component: Charts,
-      title: "Wykresy",
-      icon: "mdi-chart-bar",
     },
     {
       path: "/analysis",
